@@ -8,12 +8,15 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.request import Request
 
-from app.settings import CACHE_WEATHER
+from app.settings import CACHE_WEATHER, CACHE_CURRENCY
 from geo.serializers import CountrySerializer, CitySerializer
 from geo.services.city import CityService
 from geo.services.country import CountryService
 from geo.services.shemas import CountryCityDTO
 from geo.services.weather import WeatherService
+from geo.services.currency import CurrencyService
+
+from geo.serializers import WeatherSerializer, CurrencySerializer
 
 
 @api_view(["GET"])
@@ -136,11 +139,30 @@ def get_weather(request: Request, alpha2code: str, city: str) -> JsonResponse:
             caches[CACHE_WEATHER].set(cache_key, data)
 
     if data:
-        return JsonResponse(data)
+        serialized_obj = WeatherSerializer(data)
+        return JsonResponse(serialized_obj.data, safe=False)
 
     raise NotFound
 
 
 @api_view(["GET"])
-def get_currency(*args: Any, **kwargs: Any) -> None:
-    pass
+def get_currency(request: Request, currency: str) -> JsonResponse:
+    """
+        Получение информации о курсе указанной валюты.
+        :param Request request: Объект запроса
+        :param str currency: базовая валюта
+        :return:
+        """
+
+    cache_key = f"{currency}_info"
+    data = caches[CACHE_CURRENCY].get(cache_key)
+
+    if not data:
+        if data := CurrencyService().get_currency(base=currency):
+            caches[CACHE_CURRENCY].set(cache_key, data)
+
+    if data:
+        serialized_obj = CurrencySerializer(data)
+        return JsonResponse(serialized_obj.data, safe=False)
+
+    raise NotFound
