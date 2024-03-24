@@ -16,6 +16,8 @@ from geo.services.shemas import CountryCityDTO
 from geo.services.weather import WeatherService
 from geo.services.currency import CurrencyService
 
+from geo.serializers import WeatherSerializer, CurrencySerializer
+
 
 @api_view(["GET"])
 def get_city(request: Request, name: str) -> JsonResponse:
@@ -137,7 +139,8 @@ def get_weather(request: Request, alpha2code: str, city: str) -> JsonResponse:
             caches[CACHE_WEATHER].set(cache_key, data)
 
     if data:
-        return JsonResponse(data)
+        serialized_obj = WeatherSerializer(data)
+        return JsonResponse(serialized_obj.data, safe=False)
 
     raise NotFound
 
@@ -159,6 +162,7 @@ def get_currency(request: Request, currency: str) -> JsonResponse:
             caches[CACHE_CURRENCY].set(cache_key, data)
 
     if data:
-        return JsonResponse(data)
+        serialized_obj = CurrencySerializer(data)
+        return JsonResponse(serialized_obj.data, safe=False)
 
     raise NotFound
