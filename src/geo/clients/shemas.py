@@ -7,6 +7,8 @@ from pydantic import Field, BaseModel
 
 from base.clients.shemas import HashableBaseModel
 
+from datetime import datetime
+
 
 class LocationDTO(HashableBaseModel):
     """
@@ -186,6 +188,9 @@ class WeatherInfoDTO(BaseModel):
     humidity: int
     wind_speed: float
     description: str
+    visibility: int
+    dt: datetime
+    timezone: int
 
 
 class LocationInfoDTO(BaseModel):
